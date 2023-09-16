@@ -176,6 +176,7 @@ titleStr:
 ;********************** PAGE 2 BEGIN ***********************************
 
 colon_:
+hash_:    
     jp (ix)
 
 comma_:
@@ -258,7 +259,6 @@ lt1:
 
 ; index of an array, based on vDataWidth 22
 ; array* num -- value    ; also sets vPointer to address 
-hash_:    
 semicolon_:
 semicolon:
 arrayIndex:
