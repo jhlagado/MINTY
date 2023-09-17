@@ -1,11 +1,19 @@
-STKSIZE     equ     $100        ; Stack size
-TIBSIZE     equ     $100	    ; 256 bytes
-BUFSIZE     equ     $100	    ; 256 bytes, wraps
+DSTACK_SIZE equ $100        ; Data stack size
+RSTACK_SIZE equ $100        ; Return stack size
+NAMES_SIZE  equ $100        ; Arg names size
+TIBSIZE     equ $100	    ; 256 bytes
+BUFSIZE     equ $100	    ; 256 bytes, wraps
 
 .align $100
-            ds STKSIZE
+            ds DSTACK_SIZE
 STACK:
+DSTACK:
 
+RSTACK:
+            ds RSTACK_SIZE
+NAMES:
+            ds NAMES_SIZE
+            
 .align $100
 TIB:        ds TIBSIZE          ; must be one page, lsb of vTIBPtr is length and wraps around
 
@@ -36,6 +44,7 @@ sysVars:
 vTIBPtr:    ds 2                 
 vBufPtr     ds 2                 
 vHeapPtr:   ds 2                 
+vNamesPtr:  ds 2                 
 vRecurPtr:  ds 2                
 vDataWidth: ds 1                 
 vNumBase:   ds 1                    
@@ -54,7 +63,8 @@ vPointer    ds 2                ;
 vRemain:    ds 2                ; 
 
 vSavedIP:   ds 2                ;
-vSavedSP:   ds 2                ;
+vSavedDSP:  ds 2                ;
+vSavedRSP:  ds 2                ;
 vSavedNext: ds 2                ;
 vSavedBP:   ds 2                ;
 

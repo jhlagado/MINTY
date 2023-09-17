@@ -153,7 +153,8 @@ opcodes:
 isysVars:			            
     dw TIB                      ; vTIBPtr pointer into TIB
     dw BUFFER                   ; vBufPtr pointer into BUF
-    dw HEAP                     ; vHeapPtr \h start of the free mem
+    dw HEAP                     ; vHeapPtr start of the free mem
+    dw NAMES                    ; vNamesPtr
     dw NUL                      ; vRecurPtr
     db 2                        ; vDataWidth in bytes of array operations (default 1 byte) 
     db 10                       ; vNumBase = 10
@@ -161,8 +162,6 @@ isysVars:
     db TRUE                     ; vEcho
     db FALSE                    ; vStrMode
     db 0
-    db 0                         
-    db 0                         
     db 0                         
     db 0                         
 
@@ -725,16 +724,16 @@ command:
     call identHash
     ld hl,error1
     call commandTable
-    db lsb(div),0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-    db 0,0,0,0,0,0,lsb(abs1),0,0,0,0,0,0,0,0,0
+    db lsb(div),0,0,0,0,lsb(f),0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,lsb(t),0,0,lsb(abs1),0,0,0,0,0,0,0,0,0
     db 0,0,lsb(rec),0,0,lsb(sbb),0,0,lsb(sbe),0,0,0,lsb(rem),lsb(in),lsb(alc),0
     db 0,0,0,lsb(ret),0,0,0,lsb(scp),0,lsb(aln),0,lsb(sel),0,0,0,0
     db 0,0,lsb(dec),lsb(out),0,0,lsb(cgo),0,0,0,0,0,0,0,0,lsb(ech)
-    db 0,0,0,0,0,0,0,lsb(cll),0,lsb(sln),0,lsb(fal),0,0,lsb(cls),0
+    db 0,0,0,0,0,0,0,lsb(cll),0,lsb(sln),0,0,0,0,lsb(cls),0
     db 0,lsb(var),0,0,0,lsb(cmv),0,0,0,0,0,0,0,0,0,0
     db 0,0,0,0,lsb(bye),0,0,0,0,0,0,0,0,0,0,0
 
-    db 0,lsb(cur),0,lsb(byt),lsb(whi),0,0,0,lsb(tru),0,0,0,0,0,0,0
+    db 0,lsb(cur),0,lsb(byt),lsb(whi),0,0,0,0,0,0,0,0,0,0,0
     db lsb(voi),0,0,0,lsb(fra),0,0,lsb(hex),lsb(fre),0,0,0,0,0,0,0
     db 0,0,0,0,0,0,0,lsb(wrd),0,0,0,0,0,0,0,0
     db 0,0,0,0,0,0,0,0,0,lsb(xor),0,0,0,0,0,0
@@ -848,8 +847,8 @@ echo:
     ld (vEcho),hl
     jp (ix)
 
-; /fal
-fal:
+; /f
+f:
     jp false1
 
 ; Z80 port input
@@ -993,8 +992,8 @@ sln:
     push hl
     jp (ix)
     
-; /tru
-tru:
+; /t
+t:
     jp true1
 
 ; /var
@@ -2035,42 +2034,39 @@ identHash:
     ld d,0                             
 identHash1:    
     ld a,(bc)                           ; e = a = char
-    ld e,a                              
-    inc bc                              ; ip++
     cp " "+1                            ; is a = white space
     jr nc,identHash2    
+    dec bc
     ld a,d
     ret
 identHash2:                             ; not white space
+    sub "a"
+    ld e,a                              
     ld a,d                              ; a = d = hash
     add a,a                             ; a *= 4
     add a,a
     add a,e                             ; a += char
     ld d,a                              ; d = a
+    inc bc                              ; ip++
     jr identHash1
 
 ; a = index
 ; hl = default
 commandTable:
-    ex (sp),hl
-    ld d,(hl)
-    inc hl
-    ld e,(hl)
-    ld h,d
-    inc h
-    cp $80
+    ex (sp),hl                          ; hl = table* (sp) = default*
+    ld d,h                              ; d = msb(table*) + 1
+    inc d
+    cp $80                              ; index > $80
     jr c,commandTable2
-    inc h
+    inc d                               ; d = msb(table*) + 2
 commandTable2:
-    add a,e
-    ld a,(de)
-    or a
-    pop de
-    jp nz,commandTable3
-    ex de,hl
-    jp (hl)
-commandTable3:
+    add a,l                             ; hl = dest**
     ld l,a
+    ld e,(hl)                           ; e = lsb(dest*)
+    or a                                ; if zero use default*
+    ret z
+    ex de,hl                            ; hl = dest*
+    pop de                              ; pop default*
     jp (hl)
 
 getVarAddr:
@@ -2298,9 +2294,9 @@ init1:
 
 warmInit:
     ld bc,(vSavedIP)            ; restore IP
-    ld sp,(vSavedSP)            ; restore SP
+    ld sp,(vSavedDSP)           ; restore Data SP
+    ld iy,(vSavedRSP)           ; restore Return SP
     ld ix,(vSavedNext)          ; restore Next
-    ld iy,(vSavedBP)            ; restore BP
     jp start1
 
 coldBoot0:    
@@ -2418,10 +2414,10 @@ interpret8:
     ld bc,TIB                   
 
     ld (vSavedIP),bc            ; save IP
-    ld (vSavedSP),sp            ; save SP
+    ld (vSavedDSP),sp           ; save Data SP
+    ld (vSavedRSP),iy           ; save Return SP
     ld (vSavedNext),ix          ; save Next
-    ld (vSavedBP),iy            ; save BP
-                                
+
     dec bc
 NEXT:        
     inc bc                      ; Increment the IP
