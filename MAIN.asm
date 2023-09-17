@@ -601,16 +601,20 @@ addr:
 ;                               67
 dot:
 print:
-    call cmdTable
-    db "a",0                    ; .a print array
-    dw printArray
-    db "c",0                    ; .c print char
-    dw printChar
-    db "s",0                    ; .s print string
-    dw printString
-    dw 0                        ; .  print number, fall through
-    dw printNumber
+    inc bc
+    ld a,(bc)
+    cp "a"                      ; .a print array
+    jr z,printArray
+    cp "c"                      ; .c print char
+    jr z,printChar
+    cp "s"                      ; .s print string
+    jr z,printString
+    dec bc
+    jr printNumber              ; .  print number, fall through
 
+printArray:                     ; TODO
+    jp dotNext
+    
 ; .c print char             
 ; char -- 
 printChar:
@@ -718,268 +722,33 @@ printHex4:
 slash:
 command:
     inc bc
-    ld a,(bc)
-    cp "/"                      ; // comment
-    jp z,comment
-    dec bc
-    call charTable
-    db lsb(command_a_)
-    db lsb(command_b_)
-    db lsb(command_c_)
-    db lsb(command_d_)
-    db lsb(command_e_)
-    db lsb(command_f_)
-    db 0
-    db lsb(command_h_)
-    db lsb(command_i_)
-    db 0
-    db 0
-    db 0
-    db lsb(command_m_)
-    db 0
-    db lsb(comand_o_)
-    db 0
-    db 0
-    db lsb(command_r_)
-    db lsb(command_s_)
-    db lsb(command_t_)
-    db 0
-    db lsb(command_v_)
-    db lsb(command_w_)
-    db lsb(command_x_)
-    db 0
-    db 0
-    db lsb(command_default_)
+    call identHash
+    ld hl,error1
+    call commandTable
+    db lsb(div),0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,lsb(abs1),0,0,0,0,0,0,0,0,0
+    db 0,0,lsb(rec),0,0,lsb(sbb),0,0,lsb(sbe),0,0,0,lsb(rem),lsb(in),lsb(alc),0
+    db 0,0,0,lsb(ret),0,0,0,lsb(scp),0,lsb(aln),0,lsb(sel),0,0,0,0
+    db 0,0,lsb(dec),lsb(out),0,0,lsb(cgo),0,0,0,0,0,0,0,0,lsb(ech)
+    db 0,0,0,0,0,0,0,lsb(cll),0,lsb(sln),0,lsb(fal),0,0,lsb(cls),0
+    db 0,lsb(var),0,0,0,lsb(cmv),0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,lsb(bye),0,0,0,0,0,0,0,0,0,0,0
 
-; 12
-command_a_:
-    call cmdTable
-    db "bs"                         ; /abs absolute
-    dw absolute
-    db "dr"                         ; /adr address of
-    dw addrOf
-    db "it"                         ; /ait array iterator
-    dw arrayIter
-    db "lc"                         ; /alc mem allocate
-    dw memAllocate
-    db "ln"                         ; /aln array length
-    dw arrayLength
-    dw 0
-    dw error1
-
-command_b_:
-    call cmdTable
-    db "ye"                         ; /bye cold reboot
-    dw coldStart
-    db "yt"                         ; /byt byte mode
-    dw byteMode
-    dw 0
-    dw error1
-
-command_c_:
-    call cmdTable
-    db "ll"                         ; /cll clear screen
-    dw clearLine
-    db "ls"                         ; /cls clear screen
-    dw clearScreen
-    db "mv"                         ; /cmv cursor move 
-    dw cursorMove
-    db "ur"                         ; /cur cursor show
-    dw cursorShow
-    db "go"                         ; /cur cursor go
-    dw cursorGo
-    dw 0
-    dw error1
-
-command_d_:
-    call cmdTable
-    db "ec"                         ; /dec decimal
-    dw decBase
-    dw 0
-    dw error1
-
-command_e_:
-    call cmdTable
-    db "ch"
-    dw echo
-    dw 0
-    dw error1
-
-command_f_:
-    call cmdTable
-    db "al"                         ; /fal false 
-    dw false1
-    db "or"                         ; /for forEach
-    dw forEach
-    db "re"                         ; /fre free memory
-    dw memFree
-    db "ra"                         ; /fra free memory array
-    dw memFreeArray
-
-    db "tr"                         ; /ftr filter
-    dw filter
-    db "1",0                      
-    dw f1
-    db "2",0                      
-    dw f2
-    db "3",0                      
-    dw f3
-    db "4",0                      
-    dw f4
-    dw 0
-    dw error1                   
-
-command_h_:
-    call cmdTable
-    db "ex"                         ; /hex hex
-    dw hexBase
-    dw 0
-    dw error1                   
-
-command_i_:
-    call cmdTable
-    db "n",0                        ; /in input
-    dw input
-    dw 0
-    dw error1
-
-command_m_:
-    call cmdTable
-    db "ap"                         ; /map map
-    dw map
-    db "ax"                         ; /max maximum
-    dw maximum
-    db "in"                         ; /min minimum
-    dw minimum
-    dw 0
-    dw error1
-
-comand_o_:
-    call cmdTable
-    db "ut"                         ; /out out
-    dw output
-    dw 0
-    dw error1
-
-command_r_:
-    jr command_r
-
-command_s_:
-    jr command_s
-
-command_t_:
-    jr command_t
-
-command_v_:
-    jr command_v
-
-command_w_:
-    jr command_w
-
-command_x_:
-    jr command_x
-; 3
-command_default_:
-    jp command_default
-
+    db 0,lsb(cur),0,lsb(byt),lsb(whi),0,0,0,lsb(tru),0,0,0,0,0,0,0
+    db lsb(voi),0,0,0,lsb(fra),0,0,lsb(hex),lsb(fre),0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,lsb(wrd),0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,lsb(xor),0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,lsb(cmt),0
+    db 0,0,0,0,0,0,0,lsb(max),0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,lsb(min),0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,lsb(nil),0,0,0,0
 
 ;********************** PAGE 5 END *********************************************
-; .align $100
-
-command_r:
-    call cmdTable
-    db "ec"                      ; /rec tail call optimisation
-    dw recur
-    db "em"                      ; /rem remainder
-    dw remain
-    db "et"                      ; /ret return
-    dw return
-    db "ng"                      ; /rng range src
-    dw rangeSrc
-    dw 0
-    dw error1
-
-command_s:    
-    call cmdTable
-    db "bb"                         ; /sbb string builder begin 
-    dw stringBegin                  ; /sbe string builder end
-    db "be"
-    dw stringEnd
-    db "cn"                         ; /scn scan stream
-    dw scan1
-    db "cp"                         ; /scp string compare
-    dw stringCompare
-    db "el"                         ; /sel select
-    dw select
-    db "it"                         ; /sit string iterator
-    dw stringIter
-    db "ln"                         ; /sln string length
-    dw stringLength
-    db "rc"                         ; /src source block* --
-    dw source
-    dw 0
-    dw error1
-
-command_t:
-    call cmdTable
-    db "ru"                         ; /tru true
-    dw true1
-    dw 0
-    dw error1
-
-command_v:
-    call cmdTable
-    db "ar"                         ; /var constant vars
-    dw vars
-    db "oi"                         ; /voi void function return
-    dw void
-    dw 0
-    dw error1
-
-command_w:
-    call cmdTable
-    db "hi"                         ; /whi while true else break from loop
-    dw while
-    db "rd"                         ; /wrd word mode
-    dw wordMode
-    dw 0
-    dw error1
-
-command_x:    
-    call cmdTable
-    db "or"                         ; /xor exclsuive or
-    dw xor
-    dw 0
-    dw error1
-
-command_default:    
-    call cmdTable
-    dw 0
-    dw div
-
-;                               32
-div:
-    pop hl                      ; hl = arg_b
-    pop de                      ; de = arg_a
-    inc bc
-    ld a,(bc)
-    cp "="
-    jr z,div2
-    dec bc                      ; /                    
-    ex de,hl                     
-div2:
-    push af                     ; preserve af, bc
-    push bc                         
-    ld bc,hl                
-    call divide
-    ex de,hl
-    ld (vRemain),de
-    pop bc                      ; restore
-    pop af
-    jp sub3
+;********************** PAGE 6 BEGIN *********************************************
 
 ; /abs absolute
 ; num -- num
+abs1:
 absolute:
     pop hl
     bit 7,h
@@ -994,18 +763,15 @@ absolute1:
     push hl
     jp (ix)
 
-; /adr addrOf                   
-; char -- addr
-addrOf:
-    pop hl                      ; a = char
-    ld a,l
-    call getVarAddr
-    push hl
-addrOf2:    
-    jp (ix)
+; /alc
+; size -- adr
+alc:
+memAllocate:
+    jp (ix)    
 
 ; /aln length of an array, num elements
 ; array* -- num     
+aln:
 arrayLength:
     pop hl
     dec hl                      ; msb size 
@@ -1017,65 +783,79 @@ arrayLength1:
     push hl
     jp (ix)
 
-; 13
-; /whi while true else break from loop             
-; --
-while:
-    pop hl                      ; hl = condition, break if false
+; /bye
+bye:
+    jp coldBoot0
+
+; /cgo cursorGo
+; row column --
+cgo:
+cursorGo:
+    pop de
+    pop hl
+    ld h,d
+    call ansiGoto
+    jp (ix)
+
+; /cll clear line
+; num --
+cll:
+clearLine:
+    pop hl
     ld a,l
-    or h
-    jr z,while1
-    jp (ix)
-while1:    
-    ld e,iyl                    ; get block* just under stack frame
-    ld d,iyh
-    ld hl,8
-    add hl,de
-    inc hl
-    inc hl
-    ld (iy+2),l                 ; force first_arg* into this scope for clean up
-    ld (iy+3),h                 ; first_arg* = address of block*
-    jp blockEnd
-
-; /byt
-byteMode:
-    ld a,1
-byteMode1:
-    ld (vDataWidth),a
+    and $03
+    call ansiClearLine
     jp (ix)
 
-; //
-comment:
-    inc bc                      ; point to next char
-    ld a,(bc)
-    cp " "                      ; terminate on any char less than SP 
-    jr nc,comment
-    dec bc
-    jp (ix) 
+; /cls clear screen
+; --
+cls:
+clearScreen:
+    call ansiClearScreen
+    jp (ix)
+    
+; /cmv cursor move
+; x dir --
+cmv:
+cursorMove:
+    pop hl
+    ld a,l
+    and $03
+    add a,"A"
+    ld h,a
+    pop de
+    ld l,e
+    call ansiMove
+cursorMove1:
+    jp (ix)
 
+dec:
 decBase:
     ld a,10
 decBase1:
     ld (vNumBase),a
     jp (ix)
 
+; /div
+div:
+    jp div1
+ 
 ; /ech
 ; bool --
+ech:
 echo:
     pop hl
     ld (vEcho),hl
     jp (ix)
 
-hexBase:
-    ld a,16
-    jp decBase1
-
-error1:
-    ld hl,1                     ; error 1: unknown command
-    jp error
+; /fal
+fal:
+    jp false1
 
 ; Z80 port input
+; /in
 ; port -- value 
+in:
 input:
     pop hl
     ld e,c                      ; save IP
@@ -1086,57 +866,9 @@ input:
     push hl
     jp (ix)    
 
-; /alc
-; size -- adr
-memAllocate:
-    jp (ix)    
-
-; /fre
-; adr -- 
-memFree:
-    pop hl
-memFree1:
-    ld (vHeapPtr),hl
-    jp (ix)    
-
-; /fra
-; adr -- 
-memFreeArray:
-    pop hl
-    dec hl
-    dec hl
-    jr memFree1    
-
-; /max maximum
-; a b -- c
-maximum:
-    pop hl
-    pop de
-    push hl
-    or e 
-    sbc hl,de
-    jr nc,maximum1
-    pop hl
-    push de
-maximum1:
-    jp (ix)
-
-; /min minimum
-; a b -- c
-minimum:
-    pop hl
-    pop de
-    push hl
-    or e 
-    sbc hl,de
-    jr c,minimum1
-    pop hl
-    push de
-minimum1:
-    jp (ix)
-
 ; /o Z80 port output               
 ; value port --
+out:
 output:
     pop hl
     ld e,c                      ; save IP
@@ -1146,8 +878,23 @@ output:
     ld c,e                      ; restore IP
     jp (ix)    
 
+; /rec
+rec:
+recur:
+    pop hl
+    ld (vRecurPtr),hl
+    jp (ix)
+
+; rem
+rem:
+remain:
+    ld hl,(vRemain)
+    push hl
+    jp (ix)
+
 ; /ret
 ; -- 
+ret:
 return:
     pop hl                      ; hl = condition, exit if true
     ld a,l
@@ -1157,18 +904,50 @@ return:
 return1:    
     jp blockEnd
 
-recur:
-    pop hl
-    ld (vRecurPtr),hl
+; /sbb
+sbb:
+stringBegin:
+    ld hl,TRUE                  ; string mode = true
+    ld (vStrMode),hl
+    jr stringEnd1               ; save hl in vBufPtr
+
+; /sbe
+; -- str*
+sbe:
+stringEnd:
+    ld hl,FALSE                 ; string mode = false
+    ld (vStrMode),hl
+    ld hl,(vBufPtr)             ; append NUL to string
+    xor a
+    ld (hl),a
+    inc hl                      ; hl = string_end*
+    ld (vTemp1),bc              ; save IP
+    ld de,BUFFER                ; de = string* 
+    or a                        ; bc = size
+    sbc hl,de
+    ld bc,hl
+    ld hl,(vHeapPtr)            ; hl = hstring*            
+    ex de,hl                    ; hl = string*, de = hstring*, bc = size
+    push de                     ; return hstring*
+    ldir                        ; copy size bytes from string* to hstring*
+    ld (vHeapPtr),de            ; bump heap to hstring* += size
+    ld bc,(vTemp1)              ; restore IP
+stringEnd1:
+    ld hl,BUFFER                ; reset vBufPtr
+    ld (vBufPtr),hl              
     jp (ix)
 
-remain:
-    ld hl,(vRemain)
+; /scp string compare
+scp:
+    pop de
+    pop hl
+    call stringCompare
     push hl
     jp (ix)
 
 ; select case from an associative array of cases
 ; bool cases* --  
+sel:
 select:
     pop hl                      ; hl = case associative array [ key1 value1 ... ]
     pop de                      ; de = select key
@@ -1207,85 +986,137 @@ select2:
     pop bc
     jp (ix)
 
-; /sbb
-; --
-stringBegin:
-    ld hl,TRUE                  ; string mode = true
-    ld (vStrMode),hl
-    jr stringEnd1               ; save hl in vBufPtr
-
-; /sbe
-; -- str*
-stringEnd:
-    ld hl,FALSE                 ; string mode = false
-    ld (vStrMode),hl
-    ld hl,(vBufPtr)             ; append NUL to string
-    xor a
-    ld (hl),a
-    inc hl                      ; hl = string_end*
-    ld (vTemp1),bc              ; save IP
-    ld de,BUFFER                ; de = string* 
-    or a                        ; bc = size
-    sbc hl,de
-    ld bc,hl
-    ld hl,(vHeapPtr)            ; hl = hstring*            
-    ex de,hl                    ; hl = string*, de = hstring*, bc = size
-    push de                     ; return hstring*
-    ldir                        ; copy size bytes from string* to hstring*
-    ld (vHeapPtr),de            ; bump heap to hstring* += size
-    ld bc,(vTemp1)              ; restore IP
-stringEnd1:
-    ld hl,BUFFER                ; reset vBufPtr
-    ld (vBufPtr),hl              
-    jp (ix)
-
-stringLength:
+; /sln
+sln:
     pop de
-    ld hl,0
-    jr stringLength2
-stringLength1:
-    inc de
-    inc hl
-stringLength2:
-    ld a,(de)
-    or a
-    jr nz,stringLength1
-stringLength3:
+    call stringLength
     push hl
     jp (ix)
-
-; /sc string compare
-; string1* string2* -- bool
-; Compares two null terminated strings.
-stringCompare:
-    pop de
-    pop hl
-stringCompare1:
-    ld a,(de)
-    cp (hl)
-    jr nz,stringCompare2
-    or a
-    jr z,stringCompare3
-    inc de
-    inc hl
-    jr stringCompare1
-stringCompare2:
-    ld hl,FALSE
-    jr stringCompare4
-stringCompare3:
-    ld hl,TRUE
-stringCompare4:
-    push hl
-    jp (ix)
+    
+; /tru
+tru:
+    jp true1
 
 ; /var
 ; --
+var:
 variables:
     ld hl,VARS
     jp constant
 
+;********************** PAGE 6 END *********************************************
+.align $100
+;********************** PAGE 7 BEGIN *********************************************
+
+; /adr addrOf                   
+; char -- addr
+adr:
+addrOf:
+    pop hl                      ; a = char
+    ld a,l
+    call getVarAddr
+    push hl
+addrOf2:    
+    jp (ix)
+
+; 13
+; /whi while true else break from loop             
+; --
+whi:
+while:
+    pop hl                      ; hl = condition, break if false
+    ld a,l
+    or h
+    jr z,while1
+    jp (ix)
+while1:    
+    ld e,iyl                    ; get block* just under stack frame
+    ld d,iyh
+    ld hl,8
+    add hl,de
+    inc hl
+    inc hl
+    ld (iy+2),l                 ; force first_arg* into this scope for clean up
+    ld (iy+3),h                 ; first_arg* = address of block*
+    jp blockEnd
+
+; /byt
+byt:
+byteMode:
+    ld a,1
+byteMode1:
+    ld (vDataWidth),a
+    jp (ix)
+
+; //
+cmt:
+comment:
+    inc bc                      ; point to next char
+    ld a,(bc)
+    cp " "                      ; terminate on any char less than SP 
+    jr nc,comment
+    dec bc
+    jp (ix) 
+
+hex:
+    ld a,16
+    jp decBase1
+
+error1:
+    ld hl,1                     ; error 1: unknown command
+    jp error
+
+; /fre
+; adr -- 
+fre:
+memFree:
+    pop hl
+memFree1:
+    ld (vHeapPtr),hl
+    jp (ix)    
+
+; /fra
+; adr -- 
+fra:
+memFreeArray:
+    pop hl
+    dec hl
+    dec hl
+    jr memFree1    
+
+; /max maximum
+; a b -- c
+max:
+maximum:
+    pop hl
+    pop de
+    push hl
+    or e 
+    sbc hl,de
+    jr nc,maximum1
+    pop hl
+    push de
+maximum1:
+    jp (ix)
+
+; /min minimum
+; a b -- c
+min:
+minimum:
+    pop hl
+    pop de
+    push hl
+    or e 
+    sbc hl,de
+    jr c,minimum1
+    pop hl
+    push de
+minimum1:
+    jp (ix)
+
 ; /voi clear out returned values
 ; ?? --
+voi:
 void:
     ld e,iyl
     ld d,iyh
@@ -1294,6 +1125,7 @@ void:
     jp (ix)
     
 ; /wrd
+wrd:
 wordMode:
     ld a,2
     jp byteMode1
@@ -1311,37 +1143,9 @@ xor1:
     ld h,a        
     jp add3    
 
-; /cll clear line
-; num --
-clearLine:
-    pop hl
-    ld a,l
-    and $03
-    call ansiClearLine
-    jp (ix)
-
-; /cls clear screen
-; --
-clearScreen:
-    call ansiClearScreen
-    jp (ix)
-    
-; /cmu cursor move
-; x dir --
-cursorMove:
-    pop hl
-    ld a,l
-    and $03
-    add a,"A"
-    ld h,a
-    pop de
-    ld l,e
-    call ansiMove
-cursorMove1:
-    jp (ix)
-
 ; /cur cursor hide / show
 ; bool --
+cur:
 cursorShow:
     pop hl
     inc hl
@@ -1354,177 +1158,39 @@ cursorShow1:
     call ansiCursorShow
     jp (ix)
 
-; /cur cursorGo
-; row column --
-cursorGo:
-    pop de
-    pop hl
-    ld h,d
-    call ansiGoto
-    jp (ix)
-
-;*******************************************************************
-; MINTY implementations
-;*******************************************************************
-
-; /rng rangeSrc
-; begin end step -- src
-FUNC rangeSrc, 1, "besL"            ; range source: begin, end, step, local: L                 
-db "{"                              ; init mutable L [index active inrange_test]                           
-db    "[%b /tru %s0>{{%a%e<}}{{%a%e>}}?] %L= " 
-db    "\\kt{"                            
-db      "0%t!=/ret"                  ; break if type != 0 
-db      "\\dt:a{"                   ; return talkback to receive data
-db        "%L1;!/ret"                ; if not active don't send
-db        "%L0; %a="                ; store current index in A 
-db        "%s %L0; +="              ; inc value of index by step
-db        "1%t!=/ret"                ; break if type != 0
-db        "%L2;^"                   ; ifte: inrange_test?
-db          "{%a 1}{/fal %L1;= 0 2}"  ; ifte: /tru index, /fal active = false, quit
-db          "? %k/rec"              ; ifte: send to sink note: /rec recur      
-db      "} 0 %k^"                   ; init sink
-db    "}" 
-db "}" 
-db 0
-
-; /ai arrayIter
-; array* -- src
-FUNC arrayIter, 1, "aL"                             
-db "{"
-db    "[0 /tru %a/aln] %L="            ; init mutable L [index active size]                           
-db    "\\kt{"                            
-db      "0%t!=/ret"                  ; break if type != 0 
-db      "\\dt:i{"                   ; return talkback to receive data
-db        "%L1;!/ret"                ; if not active don't send
-db        "%L0; %i="                ; store current index in i 
-db        "%L0; ++"                 ; inc value of index
-db        "1%t!=/ret"                ; break if type != 0
-db        "%i %L2; <"               ; ifte: index < size
-db          "{%a%i; 1}{/fal %L1;= 0 2}"  ; ifte: /tru value, /fal active = false, quit
-db          "? %k/rec"              ; ifte: send to sink note: /rec recur      
-db      "} 0 %k^"                   ; init sink
-db    "}" 
-db "}" 
-db 0
-
-; /sit stringIter
-; string* -- src
-FUNC stringIter, 1, "sL"                            
-db "{"
-db    "[0 /tru] %L="                  ; init mutable L [index active]                           
-db    "\\kt{"                            
-db      "0%t!=/ret"                  ; break if type != 0 
-db      "\\dt:ic{"                  ; return talkback to receive data
-db        "%L1;!/ret"                ; if not active don't send
-db        "%L0; %i="                ; store current index in A 
-db        "%L0; ++"                 ; inc value of index by step
-db        "/byt %s%i; /wrd %c="       ; read byte at i, store in c as word
-db        "1%t!=/ret"                ; break if type != 0
-db        "%c 0 !="                 ; ifte: c != NUL ?
-db          "{%c 1}{/fal %L1;= 0 2}"  ; ifte: 1: send c, 2: active = false, send quit
-db          "? %k/rec"              ; ifte: call sink note: /rec recur      
-db      "} 0 %k^"                   ; init sink
-db    "}" 
-db "}" 
-db 0
-
-
-; /map map
-; src func -- src1
-FUNC map, 0, "sf"                   ; map: source, function                 
-db "{"
-db    "\\kt{"                        
-db      "0%t!=/ret"                  ; break if type != 0  
-db      "\\dt{"                     ; call source with tb
-db        "1%t=="                   ; ifte: type == 1 ?
-db        "{%d %f^}{%d}"            ; ifte: func(data) or data
-db        "? %t %k^"               ; ifte: send to sink
-db      "} 0 %s^" 
-db    "}" 
-db "}" 
-db 0
-
-; /ft filter
-; src pred -- src1
-FUNC filter, 1, "spT"               ; filter: source, predicate, local: T  
-db "{"
-db    "[0]%T="
-db    "\\kt{"                       ; return talkback to receive data 
-db      "\\dt{"                     ; call source with tb
-db        "["
-db          "{%d %T0;= /tru}"         ; case 0: store talkback in T[0], return true
-db          "{%d %p^}"              ; case 1: return boolean based on predicate
-db          "{/tru}"                  ; case 2: return true
-db        "]%t;^"                   ; select on %t
-db        "{%d %t %k^}{0 1 %T0;^}"  ; ifte: true send d to sink, false send 1 to talkback
-db        "?"
-db      "} 0 %s^"                    
-db    "}" 
-db "}" 
-db 0
-
-; /scn scan1
-; src init reducer -- src1
-; where reducer is a function like: \\da{...}
-FUNC scan1, 1, "sirA"                    ; src, init, reducer                      
-db "{"                                  ; reducer: \\da{...}
-db    "[%i]%A="
-db    "\\kt{"                           ; return talkback to receive data 
-db      "\\dt{"                         ; call source with tb
-db        "1%t=="                       ; ifte: type == 1 ?
-db        "{%d %A0; %r^%A0;= %A0;}{%d}" ; ifte: reduce -> acc, acc or data 
-db        "? %t %k^"                   ; ifte: send to sink
-db      "} 0 %s^"                    
-db    "}" 
-db "}" 
-db 0
-
-; /for forEach
-; src proc --
-FUNC forEach, 1, "spT"              ; forEach: source, procedure, local: T                          
-db "{"
-db    "[0]%T="
-db    "\\dt{"                       ; return talkback to receive data ; $56AA
-db      "2%t==/ret"                    ; if type == 2 skip
-db      "0%t=="                   ; ifte: type = 0 ?
-db      "{%d %T0;=}{%d %p^}"      ; ifte: 0: store talkback, 1: send data
-db      "?"                      ; ifte:
-db      "0 1 %T0;^"               ; 0 or 1: get next src data item
-db    "} 0 %s^" 
-db "}" 
-db 0
-
-; /src source
-; block* -- src
-FUNC source, 0, "f"                      ; :f block                 
-db "{"
-db    "\\kt{"                              ; :kt sink, type 
-db         "0%t==/whi"                     ; break if t != 0 ; TODO replace with /ret
-db         "\\dt{"
-db             "1%t==/whi %f^ 1 %k^"       ; if t == 1 send data to sink TODO: replace with /ret
-db         "} 0 %k^"                     ; init sink
-db     "}" 
-db "}" 
-db 0
-
-FUNC printArray, 2, "abc"
-db "{"
-db "'[ '.s %a/aln%c= 0%b= (%a %b ;. %b ++ %b %c </whi)^ ']'.s"
-db "}"
-db 0
-
 ;*******************************************************************
 ; implementations continued
 ;*******************************************************************
+                                
+div1:
+    pop hl                      ; hl = arg_b
+    pop de                      ; de = arg_a
+    inc bc
+    ld a,(bc)
+    cp "="
+    jr z,div2
+    dec bc                      ; /                    
+    ex de,hl                     
+div2:
+    push af                     ; preserve af, bc
+    push bc                         
+    ld bc,hl                
+    call divide
+    ex de,hl
+    ld (vRemain),de
+    pop bc                      ; restore
+    pop af
+    jp sub3
 
 comma:
-    call cmdTable
-    db "c",NUL                   ; .c print char
-    dw readChar
-    db "s",NUL                   ; .s print string
-    dw readString
-    dw NUL                       ; .  print number, fall through
-    dw readNumber
+    inc bc
+    ld a,(bc)
+    cp "c"                      ; .c print char
+    jr z,readChar
+    cp "s"                      ; .s print string
+    jr z,readString
+    dec bc
+    jr readNumber              ; .  print number, fall through
 
 readChar:
     call getchar
@@ -1958,6 +1624,7 @@ true1:
     push hl
     jp (ix) 
 null1:
+nil:
 false1:
     ld hl, FALSE
     push hl
@@ -2040,7 +1707,6 @@ shiftRight4:
     djnz shiftRight3
     ld bc,(vTemp1)              ; restore IP
     jp sub3
-
 
 ; division subroutine.
 ; bc: divisor, de: dividend, hl: remainder
@@ -2362,45 +2028,49 @@ charTable3:
     dec bc
     jr charTable1
     
-; followed by a table
-; db char
-; db char - if null only match on first char
-; dw addr
-; the final item must have char == NUL
-cmdTable:
-    pop hl
-cmdTable1:
-cmdTable2:
+; 8-bit hash string 
+; bc = str
+; a = hash
+identHash:
+    ld d,0                             
+identHash1:    
+    ld a,(bc)                           ; e = a = char
+    ld e,a                              
+    inc bc                              ; ip++
+    cp " "+1                            ; is a = white space
+    jr nc,identHash2    
+    ld a,d
+    ret
+identHash2:                             ; not white space
+    ld a,d                              ; a = d = hash
+    add a,a                             ; a *= 4
+    add a,a
+    add a,e                             ; a += char
+    ld d,a                              ; d = a
+    jr identHash1
+
+; a = index
+; hl = default
+commandTable:
+    ex (sp),hl
     ld d,(hl)
     inc hl
-    ld e,(hl)                   
-    inc hl
-    xor a                       ; if d == 0, matched
-    cp d
-    jr z,cmdTable5
-    inc bc                      ; match? 
-    ld a,(bc)
-    cp d
-    jr nz,cmdTable4
-cmdTable3:
-    xor a                       ; if e == 0, matched 
-    cp e
-    jr z,cmdTable5
-    inc bc
-    ld a,(bc)                   ; match? 
-    cp e
-    jr z,cmdTable5
-    dec bc
-cmdTable4:                      ; no match, restore bc, go to next table entry
-    dec bc
-    inc hl
-    inc hl
-    jr cmdTable2
-cmdTable5:                      ; matched, jump to addr
-    ld e,(hl)                   
-    inc hl
-    ld d,(hl)
+    ld e,(hl)
+    ld h,d
+    inc h
+    cp $80
+    jr c,commandTable2
+    inc h
+commandTable2:
+    add a,e
+    ld a,(de)
+    or a
+    pop de
+    jp nz,commandTable3
     ex de,hl
+    jp (hl)
+commandTable3:
+    ld l,a
     jp (hl)
 
 getVarAddr:
@@ -2571,6 +2241,48 @@ printNum:
     ld hl,BUFFER
     ld (vBufPtr),hl             ; reset vBufPtr to vHeapPtr
     jp putstr
+
+; Compares two null terminated strings.
+; de = string1* hl = string2* -- bool
+; returns: hl = bool
+stringCompare:
+stringCompare1:
+    ld a,(de)
+    cp (hl)
+    jr nz,stringCompare2
+    or a
+    jr z,stringCompare3
+    inc de
+    inc hl
+    jr stringCompare1
+stringCompare2:
+    ld hl,FALSE
+    jr stringCompare4
+stringCompare3:
+    ld hl,TRUE
+stringCompare4:
+    push hl
+    ret
+
+; string length
+; de = string*
+; returns: hl = length
+stringLength:
+    ld hl,0
+    jr stringLength2
+stringLength1:
+    inc de
+    inc hl
+stringLength2:
+    ld a,(de)
+    or a
+    jr nz,stringLength1
+stringLength3:
+    ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; MINTY interpreter
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 init:
     ld hl,titleStr

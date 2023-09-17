@@ -1,9 +1,5 @@
 # MINTY Language
 
-_I'd like to have an argument, please._
-
-## What is MINTY?
-
 MINTY is a minimalist character-based interpreter but one which aims at fast performance,
 readability and ease of use. It is written for the Z80 microprocessor and is 5K.
 
@@ -895,19 +891,6 @@ _       literal character               -- char
 /cls    clear screen                    --
 /cmv    cursor move                     x dir --    where dir = 0:up 1:down 2:forward 3:back
 /cgo    cursor go                       x y --
-```
-
-#### Streams
-
-```
-/ait    array iterator                  arr* -- src*
-/for    for each                        func* -- src*
-/ftr    filter                          src* func* -- src*
-/src    source                          blk* -- src*
-/map    map                             src* func* -- src*
-/rng    range src                       start end step -- src*
-/scn    scan stream                     src* init rfunc* -- src*
-/sit    string iterator                 str* -- src*
 ```
 
 #### Misc

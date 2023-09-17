@@ -1,4 +1,4 @@
-.engine mycomputer
+; .engine mycomputer
 
 .include "constants.asm"
 .include "test.fast.mac.asm"
@@ -25,25 +25,10 @@ db 0
 .align $100
 testsStart:
 
-    ; test "0 10 1 /rng \\a{%a.} /for", 0
-    ; test "0 10 1 /rng \\a{%a 1 + 10 *} /map \\a{%a.} /for", 0
-    ; test "0 10 1 /rng \\a{%a 3<}/ftr \\a{%a.} /for", 0
-    ; test "`hello:` 65.c 1. 2. 3.", FALSE
-    ; test "/hex /byt $1234.",0
-    ; test "/byt 257.",0
-    ; test "$1000 'hello there!' /si \\a{%a.c} /for", $1000
-    ; test "10 0 -1 /rng \\a{%a.} /for", 0
-    ; test "_B [_A {1} _B {2}] /sel", 2
-    ; test "[_A {1} _B {2}] x= _B x /sel", 2
-    ; test "[10 20 30] /ait \\a{%a.} /for", 0
-    ; test "[1 2 3].a", 0
-    ; test "0 10 1 /rng  0 \\da{%d%a+}/scn \\a{%a 24<}/ftr \\a{%a.} /for", 0
-    ; test "1 0 /cmv", false
-    ; test "/sbb `hello:` 65.c 1. 2. 3. /sbe .s", FALSE
-
-    ; call printStr
-    ; .cstr "Done!"
-    ; HALT
+    test "/fal", false
+    call printStr
+    .cstr "Done!"
+    HALT
 
     test "/fal", false
     test "/tru", true
