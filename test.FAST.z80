@@ -14,9 +14,11 @@
 testsStart:
 
     ; test "/f", false
-    ; call printStr
-    ; .cstr "Done!"
-    ; HALT
+
+    test "7 3 / /remain", 1
+    call printStr
+    .cstr "Done!"
+    HALT
 
     test "/f", false
     test "/t", true
@@ -27,63 +29,63 @@ testsStart:
     test "10", 10
     test "123", 123
     test "-1",-1
-    test "-1/abs",1
+    test "-1 /abs",1
     test "_a", $61
     test "__", $5F
     test "$10", $10
     test "$FF", $FF
     test "-1 2 +",1
-    ; test "-1 1 +",0
-    ; test "1 2 +", 3
-    ; test "4 1 2 +", 3
-    ; test "123 456 +", 123+456
-    ; test "64 128 +", 64+128
-    ; test "1 2 +", 3
-    ; test "1a= a++ a",2
-    ; test "-1 -1 -",0
-    ; test "5 3 -", 2
-    ; test "2 1 -",1
-    ; test "3a= a-- a",2
-    ; test "3 5 &", 1
-    ; test "3 5 |", 7
-    ; test "3 5 /xor", 6
-    ; test "3a= 5 a/xor a= a",6
-    ; test "0 !", true
-    ; test "2 !", false
-    ; test "0 !!", false
-    ; test "2 !!", true
-    ; test "2 3 *", 6
-    ; test "1 2 3 + *", 5
-    ; test "7 3 /", 2
-    ; test "100a= 1a+= a", 101
-    ; test "100a= 1a-= a", 99
-    ; test "100a= 2a*= a", 200
-    ; test "100a= 2 a/= a", 50
-    ; test "2a= 3b= a b+= b", 5
-    ; test "2a= 3b= a b-= b", 1
-    ; test "2a= 3b= a b*= b", 6
-    ; test "2a= 6b= a b/= b", 3
-    ; test "$55a= $AAa&= a",0
-    ; test "$55a= $AAa|= a",$FF
-    ; test "$A5a= $AAa /xor= a",$0F
-    ; test "$00AA~",$FF55
-    ; test "$AAAAa= a~= a",$5555
-    ; test "3x= 1 x <<= x", 6
-    ; test "10x= 1 x >>= x", 5
-    ; test "7 3 / /rem", 1
-    ; test "7 3 /", 2
-    ; test "2 3 ==", FALSE
-    ; test "3 3 ==", TRUE
-    ; test "1 2 <", TRUE
-    ; test "2 1 <", FALSE
-    ; test "2 3 <", TRUE
-    ; test "3 3 <", FALSE
-    ; test "1 2 >", FALSE
-    ; test "2 1 >", TRUE
-    ; test "3 3 >", FALSE
-    ; test "4 3 >", TRUE
-    ; test "2 2 <=", TRUE
-    ; test "2 2 >=", TRUE
+    test "-1 1 +",0
+    test "1 2 +", 3
+    test "4 1 2 +", 3
+    test "123 456 +", 123+456
+    test "64 128 +", 64+128
+    test "1 2 +", 3
+    test "1a= a++ a",2
+    test "-1 -1 -",0
+    test "5 3 -", 2
+    test "2 1 -",1
+    test "3a= a-- a",2
+    test "3 5 &", 1
+    test "3 5 |", 7
+    test "3 5 /xor", 6
+    test "3a= 5 a/xor a= a",6
+    test "0 !", true
+    test "2 !", false
+    test "0 !!", false
+    test "2 !!", true
+    test "2 3 *", 6
+    test "1 2 3 + *", 5
+    test "7 3 /", 2
+    test "100a= 1a+= a", 101
+    test "100a= 1a-= a", 99
+    test "100a= 2 a*= a", 200
+    test "100a= 2 a/= a", 50
+    test "2a= 3b= a b+= b", 5
+    test "2a= 3b= a b-= b", 1
+    test "2a= 3b= a b*= b", 6
+    test "2a= 6b= a b/= b", 3
+    test "$55a= $AAa&= a",0
+    test "$55a= $AAa|= a",$FF
+    test "$A5a= $AAa /xor= a",$0F
+    test "$00AA~",$FF55
+    test "$AAAAa= a~= a",$5555
+    test "3x= 1 x <<= x", 6
+    test "10x= 1 x >>= x", 5
+    test "7 3 / /remain", 1
+    test "7 3 /", 2
+    test "2 3 ==", FALSE
+    test "3 3 ==", TRUE
+    test "1 2 <", TRUE
+    test "2 1 <", FALSE
+    test "2 3 <", TRUE
+    test "3 3 <", FALSE
+    test "1 2 >", FALSE
+    test "2 1 >", TRUE
+    test "3 3 >", FALSE
+    test "4 3 >", TRUE
+    test "2 2 <=", TRUE
+    test "2 2 >=", TRUE
     ; test "3 1 <<", 6
     ; test "10 1 >>", 5
     ; test "1 x = x", 1

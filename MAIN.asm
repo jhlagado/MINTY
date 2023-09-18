@@ -721,6 +721,9 @@ printHex4:
 slash:
 command:
     inc bc
+    ld a,(bc)
+    cp "/"                      ; // comment
+    jp z,comment
     call identHash
     ld hl,error1
     call commandTable
@@ -730,15 +733,15 @@ command:
     db lsb(cls_),0,0,0,0,lsb(cmv_),0,0,lsb(bye_),0,0,lsb(hex_),0,0,0,0
     db 0,lsb(cur_),0,0,lsb(echo_),0,0,lsb(max_),0,0,0,lsb(sbb_),0,lsb(min_),lsb(sbe_),lsb(nil_)
     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-    db 0,0,lsb(args_),0,0,lsb(var_),0,0,0,0,0,lsb(sln_),0,0,0,0
+    db 0,0,lsb(args_),0,0,lsb(var_),0,0,0,0,0,lsb(sln_),0,0,lsb(frac_),0
     db 0,lsb(recur_),0,lsb(out_),0,0,0,lsb(return_),lsb(free_),0,0,0,0,0,0,0
 
     db 0,0,0,0,0,0,0,0,0,lsb(xor_),lsb(sys_),0,0,0,0,0
     db 0,0,lsb(byte_),0,0,0,0,0,0,0,0,0,0,0,0,0
     db 0,0,lsb(alloc_),0,0,0,0,0,0,0,0,0,0,0,0,0
     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,lsb(scmp_)
-    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,lsb(cmt_),0
-    db 0,0,lsb(while_),0,0,0,0,0,0,0,0,0,0,lsb(remain_),0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,lsb(while_),0,0,0,0,0,0,0,0,0,0,0,0,0
     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     db 0,0,0,lsb(void_),0,0,0,0,0,0,0,0,0,0,0,lsb(select_)
 
@@ -784,6 +787,10 @@ arrayLength1:
 
 ; /args
 args_:
+
+; /var
+var_:
+
     jp (ix)
 
 ; /bye
@@ -881,6 +888,10 @@ output:
     ld c,e                      ; restore IP
     jp (ix)    
 
+; /nil
+nil_:
+    jp null1
+
 ; /rec
 recur_:
 recur:
@@ -951,43 +962,7 @@ scmp_:
 ; select case from an associative array of cases
 ; bool cases* --  
 select_:
-select:
-    pop hl                      ; hl = case associative array [ key1 value1 ... ]
-    pop de                      ; de = select key
-    push bc                     ; save IP
-    dec hl                      ; bc = array length
-    ld b,(hl)   
-    dec hl
-    ld c,(hl)
-    inc hl
-    inc hl
-    jr select2
-select1:
-    ld a,(hl)                   ; compare lsb case key with lsb select key, hl++
-    cp e
-    inc hl                      ; hl++, flags are unaltered
-    jr nz,select1a
-    ld a,(hl)                   ; compare msb case key with msb select key, hl++
-    cp d
-    inc hl                      ; hl++, flags are unaltered
-    jr nz,select1b
-    ld e,(hl)
-    inc hl
-    ld d,(hl)
-    pop bc
-    jp go1
-select1a:
-    inc hl
-select1b:
-    inc hl
-    inc hl
-    dec bc
-select2:
-    ld a,c
-    or b
-    jr nz,select1
-    pop bc
-    jp (ix)
+    jp select 
 
 ; /sln
 sln_:
@@ -999,12 +974,6 @@ sln_:
 ; /t
 t_:
     jp true1
-
-; /var
-var_:
-variables:
-    ld hl,VARS
-    jp constant
 
 ;********************** PAGE 6 END *********************************************
 .align $100
@@ -1060,6 +1029,21 @@ comment:
     dec bc
     jp (ix) 
 
+; /cur cursor hide / show
+; bool --
+cur_:
+cursorShow:
+    pop hl
+    inc hl
+    ld a,l
+    or h
+    ld a,'h'
+    jr z,cursorShow1
+    ld a,'l'
+cursorShow1:
+    call ansiCursorShow
+    jp (ix)
+
 hex_:
     ld a,16
     jp decBase1
@@ -1113,12 +1097,12 @@ minimum1:
     jp (ix)
 
 ; /sys
-sys:
+sys_:
     jp (ix)
 
 ; /voi clear out returned values
 ; ?? --
-voi:
+void_:
 void:
     ld e,iyl
     ld d,iyh
@@ -1127,13 +1111,13 @@ void:
     jp (ix)
     
 ; /wrd
-wrd:
+word_:
 wordMode:
     ld a,2
     jp byteMode1
 
 ; /xor
-xor:
+xor_:
     pop de                      ; Bitwise xor the top 2 elements of the stack
 xor1:
     pop hl
@@ -1144,21 +1128,6 @@ xor1:
     xor h
     ld h,a        
     jp add3    
-
-; /cur cursor hide / show
-; bool --
-cur:
-cursorShow:
-    pop hl
-    inc hl
-    ld a,l
-    or h
-    ld a,'h'
-    jr z,cursorShow1
-    ld a,'l'
-cursorShow1:
-    call ansiCursorShow
-    jp (ix)
 
 ;*******************************************************************
 ; implementations continued
@@ -1255,6 +1224,44 @@ readNumber3:
     pop bc
     pop ix
     push hl
+    jp (ix)
+
+select:
+    pop hl                      ; hl = case associative array [ key1 value1 ... ]
+    pop de                      ; de = select key
+    push bc                     ; save IP
+    dec hl                      ; bc = array length
+    ld b,(hl)   
+    dec hl
+    ld c,(hl)
+    inc hl
+    inc hl
+    jr select2
+select1:
+    ld a,(hl)                   ; compare lsb case key with lsb select key, hl++
+    cp e
+    inc hl                      ; hl++, flags are unaltered
+    jr nz,select1a
+    ld a,(hl)                   ; compare msb case key with msb select key, hl++
+    cp d
+    inc hl                      ; hl++, flags are unaltered
+    jr nz,select1b
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    pop bc
+    jp go1
+select1a:
+    inc hl
+select1b:
+    inc hl
+    inc hl
+    dec bc
+select2:
+    ld a,c
+    or b
+    jr nz,select1
+    pop bc
     jp (ix)
 
 ; ~ bitwise invert
@@ -1630,7 +1637,6 @@ true1:
     push hl
     jp (ix) 
 null1:
-nil:
 false1:
     ld hl, FALSE
     push hl
@@ -2041,17 +2047,15 @@ identHash:
     ld d,0                             
 identHash1:    
     ld a,(bc)                           ; e = a = char
-    cp " "+1                            ; is a = white space
+    sub "a"                             ; is char < "a"
     jr nc,identHash2    
     dec bc
     ld a,d
     ret
 identHash2:                             ; not white space
-    sub "a"
     ld e,a                              
     ld a,d                              ; a = d = hash
-    add a,a                             ; a *= 4
-    add a,a
+    add a,a                             ; a *= 2
     add a,e                             ; a += char
     ld d,a                              ; d = a
     inc bc                              ; ip++

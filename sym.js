@@ -1,6 +1,5 @@
 const words = [
     '',
-    '/',
     'abs',
     'alloc',
     'aln',
@@ -15,6 +14,7 @@ const words = [
     'dec',
     'echo',
     'f',
+    'frac',
     'free',
     'hex',
     'in',
@@ -23,7 +23,6 @@ const words = [
     'min',
     'out',
     'recur',
-    'remain',
     'return',
     'sbb',
     'sbe',
@@ -65,7 +64,6 @@ while (key < 2 ** 12) {
                 const sym = result[idx];
                 if (sym === undefined) line += 0
                 else if (sym === "") line += `lsb(div_)`;
-                else if (sym === "/") line += `lsb(cmt_)`;
                 else line += `lsb(${sym}_)`;
                 if (i < 15) line += ','
             }
