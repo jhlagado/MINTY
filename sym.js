@@ -2,40 +2,40 @@ const words = [
     '',
     '/',
     'abs',
-    'alc',
+    'alloc',
     'aln',
+    'args',
     'bye',
-    'byt',
+    'byte',
     'cgo',
     'cll',
     'cls',
     'cmv',
     'cur',
     'dec',
-    'ech',
+    'echo',
     'f',
-    'fra',
-    'fre',
+    'free',
     'hex',
     'in',
     'nil',
     'max',
     'min',
     'out',
-    'rec',
-    'rem',
-    'ret',
+    'recur',
+    'remain',
+    'return',
     'sbb',
     'sbe',
-    'scp',
-    'sel',
+    'scmp',
+    'select',
     'sln',
     'sys',
     't',
     'var',
-    'voi',
-    'whi',
-    'wrd',
+    'void',
+    'while',
+    'word',
     'xor'
 ];
 
@@ -64,9 +64,9 @@ while (key < 2 ** 12) {
                 const idx = j * 16 + i;
                 const sym = result[idx];
                 if (sym === undefined) line += 0
-                else if (sym === "") line += `lsb(div)`;
-                else if (sym === "/") line += `lsb(cmt)`;
-                else line += `lsb(${sym})`;
+                else if (sym === "") line += `lsb(div_)`;
+                else if (sym === "/") line += `lsb(cmt_)`;
+                else line += `lsb(${sym}_)`;
                 if (i < 15) line += ','
             }
             console.log(line);
