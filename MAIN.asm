@@ -724,30 +724,30 @@ command:
     call identHash
     ld hl,error1
     call commandTable
-    db lsb(div),0,0,0,0,lsb(f),0,0,0,0,0,0,0,0,0,0
-    db 0,0,0,lsb(t),0,0,lsb(abs1),0,0,0,0,0,0,0,0,0
-    db 0,0,lsb(rec),0,0,lsb(sbb),0,0,lsb(sbe),0,0,0,lsb(rem),lsb(in),lsb(alc),0
-    db 0,0,0,lsb(ret),0,0,0,lsb(scp),0,lsb(aln),0,lsb(sel),0,0,0,0
-    db 0,0,lsb(dec),lsb(out),0,0,lsb(cgo),0,0,0,0,0,0,0,0,lsb(ech)
-    db 0,0,0,0,0,0,0,lsb(cll),0,lsb(sln),0,0,0,0,lsb(cls),0
-    db 0,lsb(var),0,0,0,lsb(cmv),0,0,0,0,0,0,0,0,0,0
-    db 0,0,0,0,lsb(bye),0,0,0,0,0,0,0,0,0,0,0
+    db lsb(div_),0,0,0,0,lsb(f_),0,0,0,0,0,0,0,lsb(word_),0,0
+    db 0,0,0,lsb(t_),lsb(abs_),0,lsb(dec_),0,0,0,0,0,0,lsb(in_),0,0
+    db 0,0,lsb(cgo_),lsb(aln_),0,0,0,0,0,lsb(cll_),0,0,0,0,0,0
+    db lsb(cls_),0,0,0,0,lsb(cmv_),0,0,lsb(bye_),0,0,lsb(hex_),0,0,0,0
+    db 0,lsb(cur_),0,0,lsb(echo_),0,0,lsb(max_),0,0,0,lsb(sbb_),0,lsb(min_),lsb(sbe_),lsb(nil_)
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,lsb(args_),0,0,lsb(var_),0,0,0,0,0,lsb(sln_),0,0,0,0
+    db 0,lsb(recur_),0,lsb(out_),0,0,0,lsb(return_),lsb(free_),0,0,0,0,0,0,0
 
-    db 0,lsb(cur),0,lsb(byt),lsb(whi),0,0,0,0,0,0,0,0,0,0,0
-    db lsb(voi),0,0,0,lsb(fra),0,0,lsb(hex),lsb(fre),0,0,0,0,0,0,0
-    db 0,0,0,0,0,0,0,lsb(wrd),0,0,0,0,0,0,0,0
-    db 0,0,0,0,0,0,0,0,0,lsb(xor),0,0,0,0,0,0
-    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,lsb(cmt),0
-    db 0,0,0,0,0,0,0,lsb(max),0,0,0,0,0,0,0,0
-    db 0,0,0,0,0,0,0,0,0,0,0,0,0,lsb(min),0,0
-    db 0,0,0,0,0,0,0,0,0,0,0,lsb(nil),0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,lsb(xor_),lsb(sys_),0,0,0,0,0
+    db 0,0,lsb(byte_),0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,lsb(alloc_),0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,lsb(scmp_)
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,lsb(cmt_),0
+    db 0,0,lsb(while_),0,0,0,0,0,0,0,0,0,0,lsb(remain_),0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,lsb(void_),0,0,0,0,0,0,0,0,0,0,0,lsb(select_)
 
 ;********************** PAGE 5 END *********************************************
 ;********************** PAGE 6 BEGIN *********************************************
 
 ; /abs absolute
 ; num -- num
-abs1:
+abs_:
 absolute:
     pop hl
     bit 7,h
@@ -762,15 +762,15 @@ absolute1:
     push hl
     jp (ix)
 
-; /alc
+; /alloc
 ; size -- adr
-alc:
+alloc_:
 memAllocate:
     jp (ix)    
 
 ; /aln length of an array, num elements
 ; array* -- num     
-aln:
+aln_:
 arrayLength:
     pop hl
     dec hl                      ; msb size 
@@ -782,13 +782,17 @@ arrayLength1:
     push hl
     jp (ix)
 
+; /args
+args_:
+    jp (ix)
+
 ; /bye
-bye:
+bye_:
     jp coldBoot0
 
 ; /cgo cursorGo
 ; row column --
-cgo:
+cgo_:
 cursorGo:
     pop de
     pop hl
@@ -798,7 +802,7 @@ cursorGo:
 
 ; /cll clear line
 ; num --
-cll:
+cll_:
 clearLine:
     pop hl
     ld a,l
@@ -808,14 +812,14 @@ clearLine:
 
 ; /cls clear screen
 ; --
-cls:
+cls_:
 clearScreen:
     call ansiClearScreen
     jp (ix)
     
 ; /cmv cursor move
 ; x dir --
-cmv:
+cmv_:
 cursorMove:
     pop hl
     ld a,l
@@ -828,7 +832,7 @@ cursorMove:
 cursorMove1:
     jp (ix)
 
-dec:
+dec_:
 decBase:
     ld a,10
 decBase1:
@@ -836,25 +840,25 @@ decBase1:
     jp (ix)
 
 ; /div
-div:
+div_:
     jp div1
  
 ; /ech
 ; bool --
-ech:
+echo_:
 echo:
     pop hl
     ld (vEcho),hl
     jp (ix)
 
 ; /f
-f:
+f_:
     jp false1
 
 ; Z80 port input
 ; /in
 ; port -- value 
-in:
+in_:
 input:
     pop hl
     ld e,c                      ; save IP
@@ -867,7 +871,7 @@ input:
 
 ; /o Z80 port output               
 ; value port --
-out:
+out_:
 output:
     pop hl
     ld e,c                      ; save IP
@@ -878,14 +882,14 @@ output:
     jp (ix)    
 
 ; /rec
-rec:
+recur_:
 recur:
     pop hl
     ld (vRecurPtr),hl
     jp (ix)
 
 ; rem
-rem:
+remain_:
 remain:
     ld hl,(vRemain)
     push hl
@@ -893,7 +897,7 @@ remain:
 
 ; /ret
 ; -- 
-ret:
+return_:
 return:
     pop hl                      ; hl = condition, exit if true
     ld a,l
@@ -904,7 +908,7 @@ return1:
     jp blockEnd
 
 ; /sbb
-sbb:
+sbb_:
 stringBegin:
     ld hl,TRUE                  ; string mode = true
     ld (vStrMode),hl
@@ -912,7 +916,7 @@ stringBegin:
 
 ; /sbe
 ; -- str*
-sbe:
+sbe_:
 stringEnd:
     ld hl,FALSE                 ; string mode = false
     ld (vStrMode),hl
@@ -937,7 +941,7 @@ stringEnd1:
     jp (ix)
 
 ; /scp string compare
-scp:
+scmp_:
     pop de
     pop hl
     call stringCompare
@@ -946,7 +950,7 @@ scp:
 
 ; select case from an associative array of cases
 ; bool cases* --  
-sel:
+select_:
 select:
     pop hl                      ; hl = case associative array [ key1 value1 ... ]
     pop de                      ; de = select key
@@ -986,19 +990,18 @@ select2:
     jp (ix)
 
 ; /sln
-sln:
+sln_:
     pop de
     call stringLength
     push hl
     jp (ix)
     
 ; /t
-t:
+t_:
     jp true1
 
 ; /var
-; --
-var:
+var_:
 variables:
     ld hl,VARS
     jp constant
@@ -1009,7 +1012,7 @@ variables:
 
 ; /adr addrOf                   
 ; char -- addr
-adr:
+adr_:
 addrOf:
     pop hl                      ; a = char
     ld a,l
@@ -1021,7 +1024,7 @@ addrOf2:
 ; 13
 ; /whi while true else break from loop             
 ; --
-whi:
+while_:
 while:
     pop hl                      ; hl = condition, break if false
     ld a,l
@@ -1040,7 +1043,7 @@ while1:
     jp blockEnd
 
 ; /byt
-byt:
+byte_:
 byteMode:
     ld a,1
 byteMode1:
@@ -1048,7 +1051,7 @@ byteMode1:
     jp (ix)
 
 ; //
-cmt:
+cmt_:
 comment:
     inc bc                      ; point to next char
     ld a,(bc)
@@ -1057,17 +1060,13 @@ comment:
     dec bc
     jp (ix) 
 
-hex:
+hex_:
     ld a,16
     jp decBase1
 
-error1:
-    ld hl,1                     ; error 1: unknown command
-    jp error
-
-; /fre
+; /free
 ; adr -- 
-fre:
+free_:
 memFree:
     pop hl
 memFree1:
@@ -1076,7 +1075,7 @@ memFree1:
 
 ; /fra
 ; adr -- 
-fra:
+fra_:
 memFreeArray:
     pop hl
     dec hl
@@ -1085,7 +1084,7 @@ memFreeArray:
 
 ; /max maximum
 ; a b -- c
-max:
+max_:
 maximum:
     pop hl
     pop de
@@ -1100,7 +1099,7 @@ maximum1:
 
 ; /min minimum
 ; a b -- c
-min:
+min_:
 minimum:
     pop hl
     pop de
@@ -1111,6 +1110,10 @@ minimum:
     pop hl
     push de
 minimum1:
+    jp (ix)
+
+; /sys
+sys:
     jp (ix)
 
 ; /voi clear out returned values
@@ -1160,7 +1163,11 @@ cursorShow1:
 ;*******************************************************************
 ; implementations continued
 ;*******************************************************************
-                                
+
+error1:
+    ld hl,1                     ; error 1: unknown command
+    jp error
+
 div1:
     pop hl                      ; hl = arg_b
     pop de                      ; de = arg_a

@@ -30,6 +30,7 @@ const words = [
     'scp',
     'sel',
     'sln',
+    'sys',
     't',
     'var',
     'voi',
