@@ -13,9 +13,9 @@
 .align $100
 testsStart:
 
-    ; test "/f", false
+    test "10 /hex .", 0
 
-    test "7 3 / /remain", 1
+    test "7 3 / /frac", 10
     call printStr
     .cstr "Done!"
     HALT

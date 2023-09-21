@@ -744,7 +744,6 @@ command:
     db 0,0,lsb(while_),0,0,0,0,0,0,0,0,0,0,0,0,0
     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     db 0,0,0,lsb(void_),0,0,0,0,0,0,0,0,0,0,0,lsb(select_)
-
 ;********************** PAGE 5 END *********************************************
 ;********************** PAGE 6 BEGIN *********************************************
 
@@ -765,11 +764,7 @@ absolute1:
     push hl
     jp (ix)
 
-; /alloc
-; size -- adr
-alloc_:
-memAllocate:
-    jp (ix)    
+
 
 ; /aln length of an array, num elements
 ; array* -- num     
@@ -787,10 +782,6 @@ arrayLength1:
 
 ; /args
 args_:
-
-; /var
-var_:
-
     jp (ix)
 
 ; /bye
@@ -807,6 +798,18 @@ cursorGo:
     call ansiGoto
     jp (ix)
 
+; /cls clear screen
+; --
+cls_:
+clearScreen:
+    call ansiClearScreen
+    jp (ix)
+    
+; /var
+var_:
+
+    jp (ix)
+
 ; /cll clear line
 ; num --
 cll_:
@@ -817,13 +820,6 @@ clearLine:
     call ansiClearLine
     jp (ix)
 
-; /cls clear screen
-; --
-cls_:
-clearScreen:
-    call ansiClearScreen
-    jp (ix)
-    
 ; /cmv cursor move
 ; x dir --
 cmv_:
@@ -837,6 +833,21 @@ cursorMove:
     ld l,e
     call ansiMove
 cursorMove1:
+    jp (ix)
+
+; /cur cursor hide / show
+; bool --
+cur_:
+cursorShow:
+    pop hl
+    inc hl
+    ld a,l
+    or h
+    ld a,'h'
+    jr z,cursorShow1
+    ld a,'l'
+cursorShow1:
+    call ansiCursorShow
     jp (ix)
 
 dec_:
@@ -862,6 +873,26 @@ echo:
 f_:
     jp false1
 
+; /frac
+frac_:
+remain:
+    ld hl,(vRemain)
+    push hl
+    jp (ix)
+
+; /free
+; adr -- 
+free_:
+memFree:
+    pop hl
+memFree1:
+    ld (vHeapPtr),hl
+    jp (ix)    
+
+hex_:
+    ld a,16
+    jp decBase1
+
 ; Z80 port input
 ; /in
 ; port -- value 
@@ -876,6 +907,40 @@ input:
     push hl
     jp (ix)    
 
+; /max maximum
+; a b -- c
+max_:
+maximum:
+    pop hl
+    pop de
+    push hl
+    or e 
+    sbc hl,de
+    jr nc,maximum1
+    pop hl
+    push de
+maximum1:
+    jp (ix)
+
+; /min minimum
+; a b -- c
+min_:
+minimum:
+    pop hl
+    pop de
+    push hl
+    or e 
+    sbc hl,de
+    jr c,minimum1
+    pop hl
+    push de
+minimum1:
+    jp (ix)
+
+; /nil
+nil_:
+    jp null1
+
 ; /o Z80 port output               
 ; value port --
 out_:
@@ -888,22 +953,11 @@ output:
     ld c,e                      ; restore IP
     jp (ix)    
 
-; /nil
-nil_:
-    jp null1
-
 ; /rec
 recur_:
 recur:
     pop hl
     ld (vRecurPtr),hl
-    jp (ix)
-
-; rem
-remain_:
-remain:
-    ld hl,(vRemain)
-    push hl
     jp (ix)
 
 ; /ret
@@ -951,19 +1005,6 @@ stringEnd1:
     ld (vBufPtr),hl              
     jp (ix)
 
-; /scp string compare
-scmp_:
-    pop de
-    pop hl
-    call stringCompare
-    push hl
-    jp (ix)
-
-; select case from an associative array of cases
-; bool cases* --  
-select_:
-    jp select 
-
 ; /sln
 sln_:
     pop de
@@ -974,21 +1015,6 @@ sln_:
 ; /t
 t_:
     jp true1
-
-;********************** PAGE 6 END *********************************************
-.align $100
-;********************** PAGE 7 BEGIN *********************************************
-
-; /adr addrOf                   
-; char -- addr
-adr_:
-addrOf:
-    pop hl                      ; a = char
-    ld a,l
-    call getVarAddr
-    push hl
-addrOf2:    
-    jp (ix)
 
 ; 13
 ; /whi while true else break from loop             
@@ -1011,6 +1037,26 @@ while1:
     ld (iy+3),h                 ; first_arg* = address of block*
     jp blockEnd
 
+; /wrd
+word_:
+wordMode:
+    ld a,2
+    jp byteMode1
+
+;********************** PAGE 6 END *********************************************
+.align $100
+;********************** PAGE 7 BEGIN *********************************************
+
+; /sys
+sys_:
+    jp (ix)
+
+; /alloc
+; size -- adr
+alloc_:
+memAllocate:
+    jp (ix)    
+
 ; /byt
 byte_:
 byteMode:
@@ -1019,86 +1065,19 @@ byteMode1:
     ld (vDataWidth),a
     jp (ix)
 
-; //
-cmt_:
-comment:
-    inc bc                      ; point to next char
-    ld a,(bc)
-    cp " "                      ; terminate on any char less than SP 
-    jr nc,comment
-    dec bc
-    jp (ix) 
 
-; /cur cursor hide / show
-; bool --
-cur_:
-cursorShow:
-    pop hl
-    inc hl
-    ld a,l
-    or h
-    ld a,'h'
-    jr z,cursorShow1
-    ld a,'l'
-cursorShow1:
-    call ansiCursorShow
-    jp (ix)
-
-hex_:
-    ld a,16
-    jp decBase1
-
-; /free
-; adr -- 
-free_:
-memFree:
-    pop hl
-memFree1:
-    ld (vHeapPtr),hl
-    jp (ix)    
-
-; /fra
-; adr -- 
-fra_:
-memFreeArray:
-    pop hl
-    dec hl
-    dec hl
-    jr memFree1    
-
-; /max maximum
-; a b -- c
-max_:
-maximum:
-    pop hl
+; /scp string compare
+scmp_:
     pop de
-    push hl
-    or e 
-    sbc hl,de
-    jr nc,maximum1
     pop hl
-    push de
-maximum1:
+    call stringCompare
+    push hl
     jp (ix)
 
-; /min minimum
-; a b -- c
-min_:
-minimum:
-    pop hl
-    pop de
-    push hl
-    or e 
-    sbc hl,de
-    jr c,minimum1
-    pop hl
-    push de
-minimum1:
-    jp (ix)
-
-; /sys
-sys_:
-    jp (ix)
+; select case from an associative array of cases
+; bool cases* --  
+select_:
+    jp select 
 
 ; /voi clear out returned values
 ; ?? --
@@ -1110,12 +1089,6 @@ void:
     ld sp,hl
     jp (ix)
     
-; /wrd
-word_:
-wordMode:
-    ld a,2
-    jp byteMode1
-
 ; /xor
 xor_:
     pop de                      ; Bitwise xor the top 2 elements of the stack
@@ -1129,9 +1102,21 @@ xor1:
     ld h,a        
     jp add3    
 
+
 ;*******************************************************************
 ; implementations continued
 ;*******************************************************************
+
+; //
+comment:
+    inc bc                      ; point to next char
+    ld a,(bc)
+    cp " "                      ; terminate on any char less than SP 
+    jr nc,comment
+    dec bc
+    jp (ix) 
+
+
 
 error1:
     ld hl,1                     ; error 1: unknown command

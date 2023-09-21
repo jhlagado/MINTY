@@ -68,6 +68,6 @@ ansiCursorShow:
     ex af,af'                   ; save a
     call printStr
     .db ESC,"["
-    .db "?25l",0	
+    .db "?25",0	
     ex af,af'                   ; restore
     jp putChar
