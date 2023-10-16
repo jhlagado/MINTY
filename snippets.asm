@@ -1,3 +1,37 @@
+###
+
+; shift \L or \R                    
+; value count -- value           
+; A = "L" or "R"
+shift_:
+shift:
+    pop hl                      ; de = arg_a, hl = arg_b
+    pop de                      
+    inc bc
+    ex de,hl                    ; de = arg_b, hl = arg_a 
+    ld (vTemp1),bc              ; save IP
+    ld b,e                      ; b = loop counter
+    inc b                       ; test for counter=0 case
+    cp "R"
+    jr z,shift6
+    jr shift4
+shift3:   
+    add hl,hl                   ; left shift hl
+shift4:   
+    djnz shift3
+    jr shift7
+shift5:   
+    srl h                       ; right shift hl
+    rr l
+shift6:   
+    djnz shift5
+shift7:   
+    ld bc,(vTemp1)              ; restore IP
+    push hl        
+    jp (ix)    
+
+
+
 ### Stack frame
 
 ```
